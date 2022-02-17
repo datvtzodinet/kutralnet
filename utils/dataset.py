@@ -6,13 +6,15 @@ import pandas as pd
 
 def read_and_resize(img_path, resize=(224, 224), color_fix=True):
     img = cv2.imread(img_path)
-    if color_fix:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    if not resize is None and isinstance(resize, tuple):
-        img = cv2.resize(img, resize)
-    else:
-        raise ValueError('resize must be a tuple (width, height)')
-    return img
+    if img is not None and img.size > 0:
+        if color_fix:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        if not resize is None and isinstance(resize, tuple):
+            img = cv2.resize(img, resize)
+        else:
+            raise ValueError('resize must be a tuple (width, height)')
+        return img
+    return None
 # end read_and_resize
 
 def read_dataset_from_csv(dataset_path, csv_name='dataset.csv', resize=None, val_split=True, debug=False):
@@ -32,16 +34,16 @@ def read_dataset_from_csv(dataset_path, csv_name='dataset.csv', resize=None, val
             print(path, end=' ')
         img = read_and_resize(path, resize=resize)
         target = 1 if row['class'] == 'fire' else 0
+        if img != None:
+            if val_split and row['purpose'] == 'val':
+                x_test.append(img)
+                y_test.append(target)
+            else:
+                x_train.append(img)
+                y_train.append(target)
 
-        if val_split and row['purpose'] == 'val':
-            x_test.append(img)
-            y_test.append(target)
-        else:
-            x_train.append(img)
-            y_train.append(target)
-
-        if debug:
-            print('ok')
+            if debug:
+                print('ok')
 
     print('Ok')
     if val_split:
